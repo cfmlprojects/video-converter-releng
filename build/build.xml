@@ -1,0 +1,59 @@
+<project name="distro.build" default="build" basedir="./" xmlns:antcontrib="antlib:net.sf.antcontrib">
+
+	<loadproperties srcfile="build.properties"/>
+	<property name="mxunit.tests.dir" location="${src.dir}/video-converter/tests" />
+	<property name="mxunit.runner" value="/tests/HttpAntRunner.cfc" />
+	<property name="mxunit.componentpath" value="video-converter.tests" />
+	<property name="mxunit.tests.results.dir" location="${dist.dir}/testresults" />
+	<property name="mxunit.recurse" value="true" />
+	<property name="mxunit.packageName" value="${mxunit.componentpath}" />
+
+	<import file="${cfdistro.build.file}"/>
+
+	<target name="build" depends="cfdistro.build">
+		<mapping physical="@src.dir@/video-converter" virtual="/video-converter" />
+	</target>
+
+	<target name="build.test" depends="build">
+		<mapping physical="@src.dir@/../tests" virtual="/tests" />
+		<dependency groupId="org.mxunit" artifactId="core" version="${mxunit.version}" mapping="/mxunit" />
+		<server-run>
+			<mxunit-call 
+				path="${mxunit.tests.dir}" componentPath="${mxunit.componentpath}"
+				packageName="${mxunit.componentpath}" recurse="${mxunit.recurse}"
+				outputdir="${mxunit.tests.results.dir}" failonerror="${mxunit.failonerror}"
+			/>
+		</server-run>
+	</target>
+
+	<target name="build.mvn.deploy" depends="project.update, build.test">
+	    <property name="mvn.repo.dest" value="local" />
+	    <property name="mvn.repo.dest" value="remote" />
+	    <property name="mvn.repo.id" value="mvn.repo.${mvn.repo.dest}" />
+	    <property name="maven.repo.local" location="${cfdistro.basedir}/artifacts" />
+		<mvn-repo id="mvn.repo.local" url="file://${maven.repo.local}/" />
+	   	<property name="mvn.type" value="release" />
+	   	<delete file="${dist.dir}/video-converter.zip" />
+		<defaultexcludes remove="**/.gitignore"/>
+		<zip destfile="${dist.dir}/video-converter.zip" update="false">
+	        <fileset dir="${src.dir}/video-converter" excludes="tests/**" />
+		</zip>
+		<pom-and-deploy pomid="video-converter.pom" packaging="zip" artifact="${dist.dir}/video-converter.zip"
+		 groupId="com.sebtools" artifactId="video-converter" version="1.0" name="video-converter"/>
+
+		<!--  create an extension -->
+	    <delete dir="${basedir}/extensionbase/" />
+	    <mkdir dir="${basedir}/extensionbase/" />
+		<copy todir="${basedir}/extensionbase/applications/video-converter">
+			<fileset dir="${src.dir}/video-converter" />
+		</copy>
+		<antcontrib:runtarget target="extension.build" />
+	    <delete dir="${basedir}/extensionbase/" />
+
+		<!-- add the extension as well -->
+		<mvn-put artifact="${extension.dist}/${extension.archive}" packaging="zip" repoId="${mvn.repo.id}"
+		 groupId="cfml.extensions" artifactId="video-converter" version="${extension.version}"/>
+
+	</target>
+	
+</project>

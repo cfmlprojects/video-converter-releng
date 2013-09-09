@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<src>
+	<project>
+		<src dest="@src.dir@/video-converter" type="git" 
+		uri="https://github.com/sebtools/Video-Converter.git" 
+		branch="master" user="" password="" />
+	</project>
+	<sources>
+	</sources>
+</src>
