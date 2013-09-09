@@ -2,7 +2,7 @@
 <src>
 	<project>
 		<src dest="@src.dir@/video-converter" type="git" 
-		uri="https://github.com/cfmlprojects/video-converter.git" 
+		uri="https://github.com/cfmlprojects/Video-Converter.git" 
 		branch="master" user="" password="" />
 	</project>
 	<sources>
